@@ -4,7 +4,7 @@ import feedparser
 import optparse
 import time
 import calendar
-import repostbot
+import repost
 import re
 
 # sub reddits to get
@@ -36,7 +36,7 @@ def getLink(summary):
 
 def controller():
     
-    r = repostbot.repostClient()
+    r = repost.Client()
     r.connect("test@j.sideramota.com","password")
 
     olds = oldPosts();
