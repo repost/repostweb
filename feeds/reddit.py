@@ -31,7 +31,7 @@ class oldPosts(object):
 def getLink(summary):
     #this will break very easily. Need to work on it
     linkstr = "<br /> <a href=\"(.*?)\">\[link]"
-    print re.findall(linkstr,summary)
+    return re.findall(linkstr,summary)
     
 
 def controller():
@@ -42,27 +42,24 @@ def controller():
     olds = oldPosts();
     
     # only get stuff which is top 100 and not sent before
-    x = 0
-    y = 0
+    lasttime = 0
     while(1):
         # Let xmpppy do its thing
         r.process()
-        if( (y % 100) == 0 ):
-            y = 0
+        now = time.time()
+        if( (now - lasttime) > 120 ):
+            lasttime = now
             feed = feedparser.parse("http://www.reddit.com/r/pics.rss");
             # check if they are new or old entries
+            print "Entries " + str(len(feed.entries))
             for ent in feed.entries:
                 if( not olds.has_key(ent.id) ):
                     # do something with new ones
-                    getLink( ent.summary)
-                    r.sendPicPost(ent.title, ent.link)
+                    image = getLink( ent.summary)
+                    r.sendPicPost(ent.title, image, ent.id)
                     olds.addID(ent.id)
-                x += 1
-                if( x > 2):
-                    break
             # lets clear out the old ones so we don't overflow 
             olds.removeOlderThan(60*60)
-        y += 1
 
 
 def main():
