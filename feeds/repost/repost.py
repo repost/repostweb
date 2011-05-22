@@ -2,8 +2,12 @@ import xmpp
 import json
 from xml.dom.minidom import Document
 import uuid
+import time
 
 class Post():
+    def __init__(self):
+        self.uuid = str(uuid.uuid4()).upper()
+
     def fromXml(self, xml):
         pasr = "asdsa"
 
@@ -16,7 +20,7 @@ class Post():
         doc.appendChild(post)
 
         id = doc.createElement("uuid")
-        idcode = doc.createTextNode( uuid.uuid4().hex)
+        idcode = doc.createTextNode(self.uuid)
         id.appendChild(idcode)
         post.appendChild(id)
         
@@ -31,17 +35,45 @@ class Post():
         return doc.toxml()
 
 class Client():
-    def connect(self, user, password):
-        jid = xmpp.protocol.JID(user)
+    def __init__(self, user, password):
+        self.user = user;
+        self.password = password
+        self.conTryTime = 0;
+
+    def connect(self):
+        jid = xmpp.protocol.JID(self.user)
         self.cl = xmpp.Client(jid.getDomain(),debug=[])
         #debug on
         #self.cl = xmpp.Client(jid.getDomain())
         if not self.cl.connect():
             #fail return
             return False
-        self.cl.auth(jid.getNode(),password)
+        print "CONNECTED"
+        self.isConnected = True
+        self.cl.auth(jid.getNode(), self.password)
         self.cl.RegisterHandler('presence', self.presenceCB)
+        self.cl.RegisterHandler('presence', self.presenceCB)
+        self.cl.RegisterDisconnectHandler(self.disconnect)
         self.cl.sendInitPresence()
+        return True
+    
+    def checkConnection(self):
+        if not self.isConnected:
+            now = time.time()
+            if (now - self.conTryTime) > 60:
+                print "Attempting reconnect"
+                self.conTryTime = time.time()
+                return self.connect()
+            else:
+                return False
+        else:
+            return True
+
+    def disconnect(self):
+        # we have been disconnected. try and come back
+        print "Disconnected :'("
+        self.isConnected = False
+        self.connect()
     
     def presenceCB(self, conn, msg):
         prs_type = msg.getType()
@@ -51,18 +83,20 @@ class Client():
             conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
 
     def sendPicPost(self, caption, image, context):
-        #form up content then send using normal post method
-        post = Post()
-        content = ImagePost(caption, image, context)
-        post.setContent(content.toStringifiedJSON())
-        self.sendToAll(post)
-
+        if self.checkConnection(): 
+            #form up content then send using normal post method
+            post = Post()
+            content = ImagePost(caption, image, context)
+            post.setContent(content.toStringifiedJSON())
+            self.sendToAll(post)
+   
     def sendToAll(self,post):
-        roster = self.cl.getRoster()
-        print post.xml()
-        for r in roster.getItems():
-            self.cl.send(xmpp.Message(r,post.xml()))
-
+        if self.checkConnection(): 
+            roster = self.cl.getRoster()
+            print post.xml()
+            for r in roster.getItems():
+                self.cl.send(xmpp.Message(r,post.xml()))
+    
     def process(self):
         self.cl.Process(1)
 

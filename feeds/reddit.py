@@ -35,12 +35,9 @@ def getLink(summary):
     
 
 def controller():
-    
-    r = repost.Client()
-    r.connect("test@j.sideramota.com","password")
-
+    r = repost.Client("reddit@j.sideramota.com","password")
+    r.connect()
     olds = oldPosts();
-    
     # only get stuff which is top 100 and not sent before
     lasttime = 0
     while(1):
@@ -60,7 +57,6 @@ def controller():
                     olds.addID(ent.id)
             # lets clear out the old ones so we don't overflow 
             olds.removeOlderThan(60*60)
-
 
 def main():
     controller()
