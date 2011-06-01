@@ -94,8 +94,14 @@ class Client():
         if self.checkConnection(): 
             roster = self.cl.getRoster()
             print post.xml()
-            for r in roster.getItems():
-                self.cl.send(xmpp.Message(r,post.xml()))
+            try:
+                for r in roster.getItems():
+                    self.cl.send(xmpp.Message(r,post.xml()))
+            except IOError, e :
+                # Usually have disconnected
+                print "Error: not connected usually "
+                print e
+                self.isConnected = False
     
     def process(self):
         self.cl.Process(1)
