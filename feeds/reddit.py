@@ -35,8 +35,9 @@ def getLink(summary):
     
 
 def controller():
-    r = repost.Client("reddit@j.sideramota.com","password")
-    r.connect()
+    r = repost.Client("reddit@j.sideramota.com/reposter","password")
+    if(not r.connect()):
+        print "Failed to connect"
     olds = oldPosts();
     # only get stuff which is top 100 and not sent before
     lasttime = 0

@@ -39,6 +39,7 @@ class Client():
         self.user = user;
         self.password = password
         self.conTryTime = 0;
+        self.isConnected = False
 
     def connect(self):
         jid = xmpp.protocol.JID(self.user)
@@ -104,7 +105,8 @@ class Client():
                 self.isConnected = False
     
     def process(self):
-        self.cl.Process(1)
+        if self.checkConnection(): 
+            self.cl.Process(1)
 
 class ImagePost():
     def __init__(self, cap, img, con):
