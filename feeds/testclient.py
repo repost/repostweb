@@ -14,12 +14,14 @@ def controller():
         print "Failed to connect"
 
     lasttime = 0
+    count = 0
     while(1):
         # Let xmpppy do its thing
         r.process()
         now = time.time()
         lasttime = now
-        r.sendTextPost(str(now), "Test message", "www.getrepost.com")
+        r.sendTextPost(str(now), str(count), "www.getrepost.com")
+        count += 1
         time.sleep(1)
 
 def main():
