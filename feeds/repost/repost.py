@@ -83,6 +83,14 @@ class Client():
             conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
             conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
 
+    def sendTextPost(self, caption, text, context):
+        if self.checkConnection(): 
+            #form up content then send using normal post method
+            post = Post()
+            content = TextPost(caption, text, context)
+            post.setContent(content.toStringifiedJSON())
+            self.sendToAll(post)
+   
     def sendPicPost(self, caption, image, context):
         if self.checkConnection(): 
             #form up content then send using normal post method
@@ -115,5 +123,14 @@ class ImagePost():
         self.context = con
     def toStringifiedJSON(self):
         jobj = {"cname":"postImage", "caption":self.caption, "image":self.image, "context":self.context}
+        return json.dumps(jobj)
+
+class TextPost():
+    def __init__(self, cap, tex, con):
+        self.caption = cap
+        self.text = tex
+        self.context = con
+    def toStringifiedJSON(self):
+        jobj = {"cname":"postText", "caption":self.caption, "content":self.text, "link":self.context}
         return json.dumps(jobj)
 
